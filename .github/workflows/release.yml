@@ -3,7 +3,7 @@ name: Release Estranged Mod
 on:
   workflow_dispatch:
   schedule:
-    - cron: '30 19 * * *' # 台灣時間早上三點半 (UTC 19:30)
+    - cron: '30 5 * * *' # 台灣時間下午一點半 (UTC 05:30)
 
 jobs:
   build:
