@@ -25,6 +25,24 @@ jobs:
             exit 1
           fi
 
+          SOURCE_BUILD_GRADLE=$(gh api \
+            -H "Accept: application/vnd.github.raw" \
+            "repos/$REPO/contents/build.gradle?ref=$UPSTREAM_TAG")
+          SOURCE_VERSION=$(printf '%s\n' "$SOURCE_BUILD_GRADLE" \
+            | sed -nE "s/^[[:space:]]*appVersionName[[:space:]]*=[[:space:]]*'([^']+)'.*/\1/p" \
+            | head -n 1)
+          if [ -z "$SOURCE_VERSION" ]; then
+            echo "::error::Unable to resolve Estranged source version from build.gradle at $UPSTREAM_TAG."
+            exit 1
+          fi
+
+          TAG_VERSION="${UPSTREAM_TAG#EPD-v}"
+          if [ "$SOURCE_VERSION" != "$TAG_VERSION" ]; then
+            echo "::error::Estranged release tag $UPSTREAM_TAG does not match public source version $SOURCE_VERSION."
+            exit 1
+          fi
+          echo "Verified Estranged source version $SOURCE_VERSION against release tag $UPSTREAM_TAG."
+
           SMM_REPO="edward9s/Shattered-Master-Mode"
           SMM_TAG=$(gh api "repos/$SMM_REPO/releases/latest" --jq '.tag_name // empty')
           if [ -z "$SMM_TAG" ]; then
